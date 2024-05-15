@@ -28,65 +28,8 @@ if sys.version_info < (3, 8):
 import numpy as np
 import pandas as pd
 import toytree as tt
-from toytree.TreeParser import TreeParser
 
 from snpio.utils import misc
-
-"""
-NOTE:  Monkey patching a method in toytree because
-There is a bug in the method that makes it incompatible
-with Python 3.11. It tries to open a file with 'rU', which
-is deprecated in Python 3.11.
-"""
-###############################################################
-# Monkey patching begin
-###############################################################
-original_get_data_from_intree = TreeParser.get_data_from_intree
-
-
-def patched_get_data_from_intree(self):
-    """
-    Load data from a file or string and return as a list of strings.
-    The data contents could be one newick string; a multiline NEXUS format
-    for one tree; multiple newick strings on multiple lines; or multiple
-    newick strings in a multiline NEXUS format. In any case, we will read
-    in the data as a list on lines.
-
-    NOTE: This method is monkey patched from the toytree package (v2.0.5) because there is a bug that appears in
-    Python 11 where it tries to open a file using 'rU'. 'rU' is is deprecated in Python 11, so I changed it to just
-    ``with open(self.intree, 'r')``\. This has been fixed on the GitHub version of toytree,
-    but it is not at present fixed in the pip or conda versions.
-    """
-
-    # load string: filename or data stream
-    if isinstance(self.intree, (str, bytes)):
-        # strip it
-        self.intree = self.intree.strip()
-
-        # is a URL: make a list by splitting a string
-        if any([i in self.intree for i in ("http://", "https://")]):
-            response = requests.get(self.intree)
-            response.raise_for_status()
-            self.data = response.text.strip().split("\n")
-
-        # is a file: read by lines to a list
-        elif os.path.exists(self.intree):
-            with open(self.intree, "r") as indata:
-                self.data = indata.readlines()
-
-        # is a string: make into a list by splitting
-        else:
-            self.data = self.intree.split("\n")
-
-    # load iterable: iterable of newick strings
-    elif isinstance(self.intree, (list, set, tuple)):
-        self.data = list(self.intree)
-
-
-TreeParser.get_data_from_intree = patched_get_data_from_intree
-##########################################################################
-# Done monkey patching.
-##########################################################################
 
 import pysam
 from Bio.Align import MultipleSeqAlignment
@@ -3877,3 +3820,16 @@ def merge_alleles(
             for i, j in zip(first[::2], first[1::2]):
                 ret.append(str(i) + "/" + str(j))
     return ret
+
+    def __reduce__(self):
+        reconstruct_args = (self.filename, self.filetype, self.popmapfile, self.force_popmap,
+                            self.exclude_pops, self.include_pops, self.guidetree,
+                            self.qmatrix_iqtree, self.qmatrix, self.siterates,
+                            self.siterates_iqtree, self.plot_format, self.prefix,
+                            self.chunk_size, self.verbose)
+
+        # Excluding vcf_header from state dictionary
+        state = {k: v for k, v in self.__dict__.items() if k not in ['vcf_header']}
+
+        callable = self.__class__
+        return (callable, reconstruct_args, state)

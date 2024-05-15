@@ -53,18 +53,18 @@ def main():
     # print(gd_filtered.alignment)
     # print(gd_filtered.tree)
 
-    # Locus-wise summary stats 
-    hsht = gd_filtered.locstats()
-    print(hsht)
+    # # Locus-wise summary stats 
+    # hsht = gd_filtered.locstats()
+    # print(hsht)
 
-    # compute Gst over range and save all as dataframe 
-    mac_range = range(21)  # MAC from 0 to 20
-    miss_prop_range = np.arange(0.0, 1.0, 0.05)  # Missing proportion from 0.0 to 0.95
-    gst_results = gst_range(hsht, mac_range, miss_prop_range)
-    print(gst_results)
+    # # compute Gst over range and save all as dataframe 
+    # mac_range = range(21)  # MAC from 0 to 20
+    # miss_prop_range = np.arange(0.0, 1.0, 0.05)  # Missing proportion from 0.0 to 0.95
+    # gst_results = gst_range(hsht, mac_range, miss_prop_range)
+    # print(gst_results)
 
-    # heatmap plot of Gst over param windows
-    plot_gst_heatmap(gst_results)
+    # # heatmap plot of Gst over param windows
+    # plot_gst_heatmap(gst_results)
 
 
 def gst_range(hsht, mac_range, miss_prop_range):
